@@ -6,7 +6,16 @@ const config: Config = {
     "./components/**/*.{js,ts,jsx,tsx,mdx}",
     "./app/**/*.{js,ts,jsx,tsx,mdx}",
   ],
-  theme: {},
+  theme: {
+    extend: {
+      margin: {
+        orange: "120px",
+      },
+      borderRadius: {
+        "sexy-name": "11.11px",
+      },
+    },
+  },
   plugins: [],
 };
 export default config;
