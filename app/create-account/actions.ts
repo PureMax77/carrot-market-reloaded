@@ -7,9 +7,8 @@ import {
 } from "@/lib/constants";
 import db from "@/lib/db";
 import { z } from "zod";
-import { getIronSession } from "iron-session";
-import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import getSession from "@/lib/session";
 
 const checkUsername = (username: string) => !username.includes("potato");
 const checkPassword = ({
@@ -98,13 +97,10 @@ export async function createAccount(prevState: any, formData: FormData) {
       },
     });
     // log the user in
-    const cookie = await getIronSession(cookies(), {
-      cookieName: "delicious-karrot",
-      password: process.env.COOKIE_PASSWORD!, /// 쿠키암호화 secret
-    });
-    //@ts-ignore
-    cookie.id = user.id;
-    await cookie.save();
+    // 쿠키가 있으면 내용을 업데이트 없으면 새로 만듬
+    const session = await getSession();
+    session.id = user.id;
+    await session.save();
     //redirect home
     redirect("/profile");
   }
