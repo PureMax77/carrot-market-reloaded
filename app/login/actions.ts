@@ -8,7 +8,7 @@ import {
 import db from "@/lib/db";
 import z from "zod";
 import bcrypt from "bcrypt";
-import getSession from "@/lib/session";
+import getSession, { goLogin } from "@/lib/session";
 import { redirect } from "next/navigation";
 
 const checkEmailExists = async (email: string) => {
@@ -63,10 +63,7 @@ export const login = async (prevState: any, formData: FormData) => {
     );
     // log the user in
     if (ok) {
-      const session = await getSession();
-      session.id = user!.id;
-      await session.save();
-      redirect("/profile");
+      await goLogin(user!.id, "/profile");
     } else {
       return {
         fieldErrors: {

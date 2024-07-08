@@ -8,7 +8,7 @@ import {
 import db from "@/lib/db";
 import { z } from "zod";
 import { redirect } from "next/navigation";
-import getSession from "@/lib/session";
+import getSession, { goLogin } from "@/lib/session";
 
 const checkUsername = (username: string) => !username.includes("potato");
 const checkPassword = ({
@@ -104,12 +104,7 @@ export async function createAccount(prevState: any, formData: FormData) {
         id: true,
       },
     });
-    // log the user in
-    // 쿠키가 있으면 내용을 업데이트 없으면 새로 만듬
-    const session = await getSession();
-    session.id = user.id;
-    await session.save();
-    //redirect home
-    redirect("/profile");
+
+    await goLogin(user.id, "/profile");
   }
 }
