@@ -5,6 +5,7 @@ import { z } from "zod";
 import validator from "validator";
 import { redirect } from "next/navigation";
 import db from "@/lib/db";
+import { goLogin } from "@/lib/session";
 
 const phoneSchema = z
   .string()
@@ -14,7 +15,23 @@ const phoneSchema = z
     "잘못된 전화번호입니다."
   );
 
-const tokenSchema = z.coerce.number().min(100000).max(999999);
+async function tokenExists(token: number) {
+  const exists = await db.sMSToken.findUnique({
+    where: {
+      token: token.toString(),
+    },
+    select: {
+      id: true,
+    },
+  });
+  return Boolean(exists);
+}
+
+const tokenSchema = z.coerce
+  .number()
+  .min(100000)
+  .max(999999)
+  .refine(tokenExists, "This token does not exist.");
 
 interface ActionState {
   token: boolean;
@@ -81,15 +98,30 @@ export async function smsLogin(prevState: ActionState, formData: FormData) {
       };
     }
   } else {
-    const result = tokenSchema.safeParse(token);
+    // 사용자가 토큰번호 입력하면
+    const result = await tokenSchema.spa(token);
     if (!result.success) {
       return {
         token: true,
         error: result.error.flatten(),
       };
     } else {
-      // 로그인 성공
-      redirect("/");
+      const token = await db.sMSToken.findUnique({
+        where: {
+          token: result.data.toString(),
+        },
+        select: {
+          id: true,
+          userId: true,
+        },
+      });
+
+      await db.sMSToken.delete({
+        where: {
+          id: token!.id,
+        },
+      });
+      await goLogin(token!.userId, "/profile");
     }
   }
 }
