@@ -1,8 +1,6 @@
 "use server";
 
 import { z } from "zod";
-import fs from "fs/promises";
-import { File } from "buffer";
 import db from "@/lib/db";
 import getSession from "@/lib/session";
 import { redirect } from "next/navigation";
@@ -29,13 +27,6 @@ export async function uploadProduct(_: any, formData: FormData) {
     price: formData.get("price"),
     description: formData.get("description"),
   };
-  // 이미지 클라우드에 업로드 배우기전 임시 처리
-  // public 폴더에 이미지 그대로 저장
-  if (data.photo instanceof File) {
-    const PhotoData = await data.photo.arrayBuffer();
-    await fs.appendFile(`./public/${data.photo.name}`, Buffer.from(PhotoData));
-    data.photo = `/${data.photo.name}`;
-  }
 
   const result = productSchema.safeParse(data);
   if (!result.success) {
@@ -62,4 +53,20 @@ export async function uploadProduct(_: any, formData: FormData) {
       redirect(`/products/${product.id}`);
     }
   }
+}
+
+export async function getUploadUrl() {
+  const response = await fetch(
+    `
+https://api.cloudflare.com/client/v4
+/accounts/${process.env.CLOUDFLARE_ACCOUNT_ID}/images/v2/direct_upload`,
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${process.env.CLOUDFLARE_TOKEN}`,
+      },
+    }
+  );
+  const data = await response.json();
+  return data;
 }

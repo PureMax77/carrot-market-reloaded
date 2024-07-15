@@ -4,13 +4,14 @@ import Button from "@/components/button";
 import Input from "@/components/input";
 import { PhotoIcon } from "@heroicons/react/24/solid";
 import { useState } from "react";
-import { uploadProduct } from "./actions";
+import { getUploadUrl, uploadProduct } from "./actions";
 import { useFormState } from "react-dom";
 
 export default function AddProduct() {
   const [preview, setPreview] = useState("");
+  const [uploadUrl, setUploadUrl] = useState("");
 
-  const onImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const onImageChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const {
       target: { files },
     } = event;
@@ -35,6 +36,15 @@ export default function AddProduct() {
     const maxSizeInMB = 3;
     if (file.size > maxSizeInMB * 1024 * 1024) {
       alert("3MB 이하의 이미지를 사용해주세요.");
+      return;
+    }
+
+    const { success, result } = await getUploadUrl();
+    if (success) {
+      const { id, uploadURL } = result;
+      setUploadUrl(uploadURL);
+    } else {
+      alert("이미지 업로드에 실패했습니다");
       return;
     }
 
