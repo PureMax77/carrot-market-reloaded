@@ -10,6 +10,7 @@ import { useFormState } from "react-dom";
 export default function AddProduct() {
   const [preview, setPreview] = useState("");
   const [uploadUrl, setUploadUrl] = useState("");
+  const [photoId, setPhotoId] = useState("");
 
   const onImageChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const {
@@ -43,6 +44,7 @@ export default function AddProduct() {
     if (success) {
       const { id, uploadURL } = result;
       setUploadUrl(uploadURL);
+      setPhotoId(id);
     } else {
       alert("이미지 업로드에 실패했습니다");
       return;
@@ -53,7 +55,31 @@ export default function AddProduct() {
     setPreview(url);
   };
 
-  const [state, action] = useFormState(uploadProduct, null);
+  const intercepAction = async (_: any, formData: FormData) => {
+    const file = formData.get("photo");
+    if (!file) {
+      alert("게시물 생성에 실패했습니다.");
+      return;
+    }
+    const cloudflareForm = new FormData();
+    cloudflareForm.append("file", file);
+    // 이미지 업로드
+    const response = await fetch(uploadUrl, {
+      method: "POST",
+      body: cloudflareForm,
+    });
+    if (response.status !== 200) {
+      alert("게시물 생성에 실패했습니다.");
+      return;
+    }
+
+    const photoUrl = `https://imagedelivery.net/S5EmZfh9mNC3-3xmENYiiA/${photoId}`;
+    formData.set("photo", photoUrl);
+
+    // uploadProduct에 return하는 것들이 있기 때문에 Return뒤에 넣어줘야됨
+    return uploadProduct(_, formData);
+  };
+  const [state, action] = useFormState(intercepAction, null);
 
   return (
     <div>
