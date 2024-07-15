@@ -70,6 +70,7 @@ export default function AddProduct() {
     setFile(file);
   };
 
+  // handleSubmit 안의 함수는 validation이 성공한 후에 불려짐
   const onSubmit = handleSubmit(async (data: ProductType) => {
     if (!file) {
       alert("게시물 생성에 실패했습니다.");
