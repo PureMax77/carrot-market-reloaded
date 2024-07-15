@@ -17,6 +17,26 @@ export default function AddProduct() {
       return;
     }
     const file = files[0];
+
+    // Check if the file is an image
+    const validImageTypes = [
+      "image/jpeg",
+      "image/png",
+      "image/gif",
+      "image/bmp",
+    ];
+    if (!validImageTypes.includes(file.type)) {
+      alert("이미지 파일이 아닙니다.");
+      return;
+    }
+
+    // Check if the file size is less than 3MB
+    const maxSizeInMB = 3;
+    if (file.size > maxSizeInMB * 1024 * 1024) {
+      alert("3MB 이하의 이미지를 사용해주세요.");
+      return;
+    }
+
     // 브라우저에 올라간 이미지 메모리 주소URL
     const url = URL.createObjectURL(file);
     setPreview(url);
