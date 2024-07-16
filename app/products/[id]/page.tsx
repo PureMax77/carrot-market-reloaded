@@ -136,6 +136,9 @@ export default async function ProductDetail({
   );
 }
 
+// 기본값이 true > generateStaticParams에서 지정하지 않은 id값이 오면 첫요청시에 해당 id의 static페이지 생성
+export const dynamicParams = true;
+
 // dynamic route의 id를 미리 지정해 static 페이지 가능
 export async function generateStaticParams() {
   const products = await db.product.findMany({
