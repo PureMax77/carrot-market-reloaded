@@ -32,8 +32,12 @@ export const metadata = {
   title: "Home",
 };
 
+// https://nextjs.org/docs/app/api-reference/file-conventions/route-segment-config
+// export const dynamic = "force-dynamic"; // 강제로 dynamic page로 변경하는 옵션
+export const revalidate = 60; // 60초후 데이터 업데이트
+
 export default async function Products() {
-  const initialProducts = await getCachedProducts();
+  const initialProducts = await getInitialProducts();
 
   const revalidate = async () => {
     "use server";

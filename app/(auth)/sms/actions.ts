@@ -133,6 +133,11 @@ export async function smsLogin(prevState: ActionState, formData: FormData) {
         },
       });
       await goLogin(token!.userId, "/profile");
+
+      // 타입때문에 넣어놈 의미 없음
+      return {
+        token: true,
+      };
     }
   }
 }
