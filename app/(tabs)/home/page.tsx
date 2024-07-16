@@ -5,7 +5,9 @@ import { Prisma } from "@prisma/client";
 import { unstable_cache as nextCache } from "next/cache";
 import Link from "next/link";
 
-const getCachedProducts = nextCache(getInitialProducts, ["home-products"]);
+const getCachedProducts = nextCache(getInitialProducts, ["home-products"], {
+  revalidate: 10, // 60초 이후에 재요청시 캐시 업데이트
+});
 
 async function getInitialProducts() {
   const products = await db.product.findMany({
