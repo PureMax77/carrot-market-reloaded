@@ -1,5 +1,5 @@
 import db from "@/lib/db";
-import getSession from "@/lib/session";
+// import getSession from "@/lib/session";
 import { notFound } from "next/navigation";
 import { UserIcon } from "@heroicons/react/24/solid";
 import { formatToWon } from "@/lib/utils";
@@ -8,12 +8,12 @@ import Image from "next/image";
 import { unstable_cache as nextCache, revalidateTag } from "next/cache";
 
 async function getIsOwner(userId: number) {
-  const session = await getSession();
-  if (session.id) {
-    return session.id === userId;
-  } else {
-    return false;
-  }
+  // static 페이지로 만들기위해 임시 주석
+  // const session = await getSession();
+  // if (session.id) {
+  //   return session.id === userId;
+  // }
+  return false;
 }
 
 async function getProduct(id: number) {
@@ -134,4 +134,14 @@ export default async function ProductDetail({
       </div>
     </div>
   );
+}
+
+// dynamic route의 id를 미리 지정해 static 페이지 가능
+export async function generateStaticParams() {
+  const products = await db.product.findMany({
+    select: {
+      id: true,
+    },
+  });
+  return products.map((product) => ({ id: product.id }));
 }
