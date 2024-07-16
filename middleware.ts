@@ -32,7 +32,7 @@ export async function middleware(request: NextRequest) {
     // 로그인 됨
     if (exists) {
       // public에 접근
-      return NextResponse.redirect(new URL("/products", request.url));
+      return NextResponse.redirect(new URL("/home", request.url));
     }
   }
 }
