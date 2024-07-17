@@ -146,5 +146,5 @@ export async function generateStaticParams() {
       id: true,
     },
   });
-  return products.map((product) => ({ id: product.id }));
+  return products.map((product) => ({ id: product.id + "" }));
 }
