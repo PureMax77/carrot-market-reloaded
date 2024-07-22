@@ -3,9 +3,9 @@
 import { InitialChatMessages } from "@/app/chats/[id]/page";
 import { formatToTimeAgo } from "@/lib/utils";
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ArrowUpCircleIcon } from "@heroicons/react/24/solid";
-import { createClient } from "@supabase/supabase-js";
+import { createClient, RealtimeChannel } from "@supabase/supabase-js";
 
 const SUPABASE_PUBKEY =
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRldHZkb2Rid2FqcmZjaGt2YnBhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjE2Mjg0NjcsImV4cCI6MjAzNzIwNDQ2N30.l2HegTGLDcU35Wc_g6ppvllVQEd56QqmqYuX1q1BD2o";
@@ -15,15 +15,20 @@ interface ChatMessagesListProps {
   chatRoomId: string;
   userId: number;
   initialMessages: InitialChatMessages;
+  username: string;
+  avatar: string;
 }
 
 export default function ChatMessagesList({
   chatRoomId,
   userId,
   initialMessages,
+  username,
+  avatar,
 }: ChatMessagesListProps) {
   const [messages, setMessages] = useState(initialMessages);
   const [message, setMessage] = useState("");
+  const channel = useRef<RealtimeChannel>();
 
   const onChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setMessage(event.target.value);
@@ -41,22 +46,39 @@ export default function ChatMessagesList({
         user: { username: "no need", avatar: "anything" },
       },
     ]);
+    channel.current?.send({
+      type: "broadcast",
+      event: "message",
+      payload: {
+        id: Date.now(),
+        payload: message,
+        created_at: new Date(),
+        userId,
+        user: { username, avatar },
+      },
+    });
     setMessage("");
   };
 
   useEffect(() => {
     const client = createClient(SUPABASE_URL, SUPABASE_PUBKEY);
-    const channel = client.channel(`room-${chatRoomId}`);
-    channel.on(
-      "broadcast",
-      {
-        event: "message",
-      },
-      (payload) => {
-        console.log(payload);
-      }
-    );
-  }, []);
+    channel.current = client.channel(`room-${chatRoomId}`);
+    channel.current
+      .on(
+        "broadcast",
+        {
+          event: "message",
+        },
+        (payload) => {
+          setMessages((prev) => [...prev, payload.payload]);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      channel.current?.unsubscribe();
+    };
+  }, [chatRoomId]);
 
   return (
     <div className="p-5 flex flex-col gap-5 min-h-screen justify-end">
