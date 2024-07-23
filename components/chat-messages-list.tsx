@@ -6,6 +6,7 @@ import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { ArrowUpCircleIcon } from "@heroicons/react/24/solid";
 import { createClient, RealtimeChannel } from "@supabase/supabase-js";
+import { saveMessage } from "@/app/chats/actions";
 
 const SUPABASE_PUBKEY =
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRldHZkb2Rid2FqcmZjaGt2YnBhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjE2Mjg0NjcsImV4cCI6MjAzNzIwNDQ2N30.l2HegTGLDcU35Wc_g6ppvllVQEd56QqmqYuX1q1BD2o";
@@ -34,7 +35,7 @@ export default function ChatMessagesList({
     setMessage(event.target.value);
   };
 
-  const onSubmit = (event: React.FormEvent) => {
+  const onSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     setMessages((prev) => [
       ...prev,
@@ -57,6 +58,7 @@ export default function ChatMessagesList({
         user: { username, avatar },
       },
     });
+    await saveMessage(message, chatRoomId);
     setMessage("");
   };
 
